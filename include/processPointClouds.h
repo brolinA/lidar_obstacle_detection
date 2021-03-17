@@ -1,0 +1,62 @@
+// PCL lib Functions for processing point clouds 
+
+#ifndef PROCESSPOINTCLOUDS_H_
+#define PROCESSPOINTCLOUDS_H_
+
+#include <pcl/io/pcd_io.h>
+#include <pcl/common/common.h>
+#include <pcl/filters/extract_indices.h>
+#include <pcl/filters/voxel_grid.h>
+#include <pcl/filters/crop_box.h>
+#include <pcl/kdtree/kdtree.h>
+#include <pcl/segmentation/sac_segmentation.h>
+#include <pcl/segmentation/extract_clusters.h>
+#include <pcl/common/transforms.h>
+#include <iostream> 
+#include <string>  
+#include <vector>
+#include <ctime>
+#include <chrono>
+#include "render/box.h"
+#include <unordered_set>
+#include <kdtree.h>
+
+template<typename PointT>
+class ProcessPointClouds {
+public:
+
+    //constructor
+    ProcessPointClouds();
+    //deconstructor
+    ~ProcessPointClouds();
+
+    void numPoints(typename pcl::PointCloud<PointT>::Ptr cloud);
+
+    typename pcl::PointCloud<PointT>::Ptr FilterCloud(typename pcl::PointCloud<PointT>::Ptr cloud, float filterRes, Eigen::Vector4f minPoint, Eigen::Vector4f maxPoint);
+
+    std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> SegmentPlane(typename pcl::PointCloud<PointT>::Ptr cloud, int maxIterations, float distanceThreshold);
+
+    std::vector<typename pcl::PointCloud<PointT>::Ptr> Clustering(typename pcl::PointCloud<PointT>::Ptr cloud, float clusterTolerance, int minSize, int maxSize);
+
+    Box BoundingBox(typename pcl::PointCloud<PointT>::Ptr cluster);
+
+    void savePcd(typename pcl::PointCloud<PointT>::Ptr cloud, std::string file);
+
+    typename pcl::PointCloud<PointT>::Ptr loadPcd(std::string file);
+
+    std::vector<boost::filesystem::path> streamPcd(std::string dataPath);
+
+    std::vector<float> CrossProduct(std::vector<float> v1, std::vector<float> v2);
+
+    std::vector<typename pcl::PointCloud<PointT>::Ptr > euclideanCluster(const typename pcl::PointCloud<PointT> &input_cloud, KdTree* tree, float distanceTol, int min_point, int max_points);
+
+    void getAllNodes(Node *curr_node, std::vector<std::pair<std::vector<float> , int> > &nodes);
+
+    void proximityCheck(std::vector<float> check_pt_, int id, std::vector<int> &final_cluster, std::vector<std::pair<std::vector<float>, int> > &unchecked_nodes, KdTree* tree, float tolerance, int max_points);
+
+    void removeID(int id, std::vector<std::pair<std::vector<float>, int> > &point_list);
+
+    void extractCloudFromIndices(const std::vector<int> &indices, pcl::PointCloud<pcl::PointXYZI> input_cloud, pcl::PointCloud<pcl::PointXYZI>::Ptr &output_cluster);
+  
+};
+#endif /* PROCESSPOINTCLOUDS_H_ */
